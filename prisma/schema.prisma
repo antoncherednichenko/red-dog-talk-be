@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  ownedRooms Room[] @relation("RoomOwner")
+  memberships RoomMember[]
+}
+
+enum RoomType {
+  Audio
+  Video
+}
+
+enum RoomMemberStatus {
+  ONLINE
+  OFFLINE
+  AFK
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  name      String
+  type      RoomType
+  ownerId   String
+  owner     User     @relation("RoomOwner", fields: [ownerId], references: [id])
+  members   RoomMember[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RoomMember {
+  id        String           @id @default(uuid())
+  roomId    String
+  userId    String
+  status    RoomMemberStatus @default(OFFLINE)
+  lastSeen  DateTime         @default(now())
+  joinedAt  DateTime         @default(now())
+  
+  room      Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+}
