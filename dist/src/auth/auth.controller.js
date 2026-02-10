@@ -43,6 +43,14 @@ let AuthController = class AuthController {
         });
         return { message: 'Logged in successfully' };
     }
+    logout(res) {
+        res.clearCookie('access_token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+        });
+        return { message: 'Logged out successfully' };
+    }
     getProfile(req) {
         return req.user;
     }
@@ -66,6 +74,14 @@ __decorate([
     __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('logout'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "logout", null);
 __decorate([
     (0, common_1.Get)('profile'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),

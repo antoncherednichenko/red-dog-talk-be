@@ -5,17 +5,17 @@ export declare class RoomMembersController {
     constructor(roomMembersService: RoomMembersService);
     updateStatus(roomId: string, updateStatusDto: UpdateRoomMemberStatusDto, req: any): Promise<{
         user: {
-            email: string;
-            name: string;
-            password: string;
             id: string;
+            name: string;
+            email: string;
+            password: string;
         };
     } & {
         id: string;
+        roomId: string;
+        userId: string;
         status: import(".prisma/client").$Enums.RoomMemberStatus;
         lastSeen: Date;
         joinedAt: Date;
-        userId: string;
-        roomId: string;
     }>;
 }
