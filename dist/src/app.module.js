@@ -17,6 +17,7 @@ const auth_module_1 = require("./auth/auth.module");
 const rooms_module_1 = require("./rooms/rooms.module");
 const cookie_logger_middleware_1 = require("./middleware/cookie-logger.middleware");
 const room_members_module_1 = require("./room-members/room-members.module");
+const mediasoup_module_1 = require("./mediasoup/mediasoup.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(cookie_logger_middleware_1.CookieLoggerMiddleware).forRoutes('*');
@@ -34,6 +35,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             rooms_module_1.RoomsModule,
             room_members_module_1.RoomMembersModule,
+            mediasoup_module_1.MediasoupModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
