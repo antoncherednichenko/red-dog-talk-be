@@ -1,33 +1,29 @@
-# ===== STAGE 1: build =====
-FROM node:20-bullseye AS builder
+FROM node:20-bullseye
+
+# Install build dependencies for native modules (mediasoup)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    build-essential \
+    net-tools \
+    iproute2 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+
+RUN npm ci
 
 COPY . .
 
-# Prisma client
+# Generate Prisma client
 RUN npx prisma generate
+ 
 
-# Nest build
 RUN npm run build
-
-# ===== STAGE 2: production =====
-FROM node:20-bullseye
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install --omit=dev
-
-# Copy dist from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 4242
 EXPOSE 40000-49999/udp
 
-# Start prod
-CMD ["node", "dist/main.js"]
+CMD ["npm", "run", "start:prod"]
