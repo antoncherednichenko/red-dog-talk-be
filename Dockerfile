@@ -26,4 +26,4 @@ RUN npm run build
 EXPOSE 4242
 EXPOSE 40000-49999/udp
 
-CMD ["npm", "run", "start:prod"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]

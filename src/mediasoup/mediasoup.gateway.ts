@@ -33,8 +33,10 @@ export class MediasoupGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { roomId: string },
   ) {
-    const transport = await this.mediasoupService.createWebRtcTransport(payload.roomId);
-    
+    const transport = await this.mediasoupService.createWebRtcTransport(
+      payload.roomId,
+    );
+
     return {
       id: transport.id,
       iceParameters: transport.iceParameters,
@@ -48,30 +50,44 @@ export class MediasoupGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { transportId: string; dtlsParameters: any },
   ) {
-    await this.mediasoupService.connectTransport(payload.transportId, payload.dtlsParameters);
+    await this.mediasoupService.connectTransport(
+      payload.transportId,
+      payload.dtlsParameters,
+    );
     return {};
   }
 
   @SubscribeMessage('mediasoup:produce')
   async produce(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { transportId: string; kind: 'audio' | 'video'; rtpParameters: any; roomId: string },
+    @MessageBody()
+    payload: {
+      transportId: string;
+      kind: 'audio' | 'video';
+      rtpParameters: any;
+      roomId: string;
+    },
   ) {
-    const producer = await this.mediasoupService.createProducer(payload.transportId, payload.kind, payload.rtpParameters);
-    
+    const producer = await this.mediasoupService.createProducer(
+      payload.transportId,
+      payload.kind,
+      payload.rtpParameters,
+    );
+
     // Broadcast new producer to room
     client.to(payload.roomId).emit('mediasoup:new_producer', {
-        producerId: producer.id,
-        socketId: client.id,
+      producerId: producer.id,
+      socketId: client.id,
     });
-    
+
     return { id: producer.id };
   }
 
   @SubscribeMessage('mediasoup:consume')
   async consume(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { transportId: string; producerId: string; rtpCapabilities: any },
+    @MessageBody()
+    payload: { transportId: string; producerId: string; rtpCapabilities: any },
   ) {
     try {
       const consumer = await this.mediasoupService.createConsumer(
@@ -79,7 +95,7 @@ export class MediasoupGateway {
         payload.producerId,
         payload.rtpCapabilities,
       );
-      
+
       return {
         id: consumer.id,
         producerId: payload.producerId,

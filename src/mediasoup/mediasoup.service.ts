@@ -1,6 +1,12 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as mediasoup from 'mediasoup';
-import { Worker, Router, WebRtcTransport, Producer, Consumer } from 'mediasoup/node/lib/types';
+import {
+  Worker,
+  Router,
+  WebRtcTransport,
+  Producer,
+  Consumer,
+} from 'mediasoup/node/lib/types';
 import { config } from './mediasoup.config';
 
 @Injectable()
@@ -20,7 +26,10 @@ export class MediasoupService implements OnModuleInit {
     });
 
     this.worker.on('died', () => {
-      console.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', this.worker.pid);
+      console.error(
+        'mediasoup worker died, exiting in 2 seconds... [pid:%d]',
+        this.worker.pid,
+      );
       setTimeout(() => process.exit(1), 2000);
     });
   }
@@ -28,7 +37,9 @@ export class MediasoupService implements OnModuleInit {
   async getRouter(roomId: string): Promise<Router> {
     let router = this.routers.get(roomId);
     if (!router) {
-      router = await this.worker.createRouter({ mediaCodecs: config.router.mediaCodecs });
+      router = await this.worker.createRouter({
+        mediaCodecs: config.router.mediaCodecs,
+      });
       this.routers.set(roomId, router);
     }
     return router;
@@ -38,7 +49,8 @@ export class MediasoupService implements OnModuleInit {
     const router = await this.getRouter(roomId);
     const transport = await router.createWebRtcTransport({
       listenIps: config.webRtcTransport.listenIps,
-      initialAvailableOutgoingBitrate: config.webRtcTransport.initialAvailableOutgoingBitrate,
+      initialAvailableOutgoingBitrate:
+        config.webRtcTransport.initialAvailableOutgoingBitrate,
       appData: { roomId },
     });
 
@@ -53,7 +65,7 @@ export class MediasoupService implements OnModuleInit {
 
     // Clean up if router closes
     transport.on('routerclose', () => {
-        this.transports.delete(transport.id);
+      this.transports.delete(transport.id);
     });
 
     return transport;
@@ -78,7 +90,11 @@ export class MediasoupService implements OnModuleInit {
     }
   }
 
-  async createProducer(transportId: string, kind: 'audio' | 'video', rtpParameters: any): Promise<Producer> {
+  async createProducer(
+    transportId: string,
+    kind: 'audio' | 'video',
+    rtpParameters: any,
+  ): Promise<Producer> {
     const transport = this.getTransport(transportId);
     if (!transport) throw new Error(`Transport ${transportId} not found`);
 
@@ -93,7 +109,11 @@ export class MediasoupService implements OnModuleInit {
     return producer;
   }
 
-  async createConsumer(transportId: string, producerId: string, rtpCapabilities: any): Promise<Consumer> {
+  async createConsumer(
+    transportId: string,
+    producerId: string,
+    rtpCapabilities: any,
+  ): Promise<Consumer> {
     const transport = this.getTransport(transportId);
     if (!transport) throw new Error(`Transport ${transportId} not found`);
 
@@ -101,7 +121,7 @@ export class MediasoupService implements OnModuleInit {
     const router = this.routers.get(roomId);
 
     if (!router) {
-        throw new Error(`Router for room ${roomId} not found`);
+      throw new Error(`Router for room ${roomId} not found`);
     }
 
     if (!router.canConsume({ producerId, rtpCapabilities })) {
@@ -115,7 +135,7 @@ export class MediasoupService implements OnModuleInit {
     });
 
     this.consumers.set(consumer.id, consumer);
-    
+
     consumer.on('transportclose', () => {
       consumer.close();
       this.consumers.delete(consumer.id);
@@ -125,7 +145,7 @@ export class MediasoupService implements OnModuleInit {
       consumer.close();
       this.consumers.delete(consumer.id);
     });
-    
+
     return consumer;
   }
 

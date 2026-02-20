@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -39,6 +44,8 @@ export class RoomsService {
         name: true,
         ownerId: true,
         type: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -54,20 +61,20 @@ export class RoomsService {
   }
 
   async getMembers(roomId: string) {
-      const room = await this.prisma.room.findUnique({
-          where: { id: roomId },
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        members: {
           include: {
-              members: {
-                  include: {
-                      user: true
-                  }
-              }
-          }
-      });
-      if (!room) {
-          throw new NotFoundException(`Room with id ${roomId} not found`);
-      }
-      return room.members;
+            user: true,
+          },
+        },
+      },
+    });
+    if (!room) {
+      throw new NotFoundException(`Room with id ${roomId} not found`);
+    }
+    return room.members;
   }
 
   async update(id: string, updateRoomDto: UpdateRoomDto, userId: string) {
@@ -94,12 +101,12 @@ export class RoomsService {
 
   async join(roomId: string, userId: string) {
     const room = await this.prisma.room.findUnique({
-        where: { id: roomId },
-        include: { members: true }
+      where: { id: roomId },
+      include: { members: true },
     });
 
     if (!room) {
-        throw new NotFoundException(`Room with id ${roomId} not found`);
+      throw new NotFoundException(`Room with id ${roomId} not found`);
     }
 
     // Check if already member
@@ -115,11 +122,11 @@ export class RoomsService {
 
     // Add member
     await this.prisma.roomMember.create({
-        data: {
-            roomId,
-            userId,
-            status: RoomMemberStatus.ONLINE,
-        }
+      data: {
+        roomId,
+        userId,
+        status: RoomMemberStatus.ONLINE,
+      },
     });
 
     return this.findOne(roomId);
@@ -127,26 +134,26 @@ export class RoomsService {
 
   async leave(roomId: string, userId: string) {
     const room = await this.prisma.room.findUnique({
-        where: { id: roomId },
-        include: { members: true }
+      where: { id: roomId },
+      include: { members: true },
     });
 
     if (!room) {
-        throw new NotFoundException(`Room with id ${roomId} not found`);
+      throw new NotFoundException(`Room with id ${roomId} not found`);
     }
 
     const member = room.members.find((m) => m.userId === userId);
     if (!member) {
-        throw new BadRequestException('User is not a member of this room');
+      throw new BadRequestException('User is not a member of this room');
     }
 
     await this.prisma.roomMember.delete({
-        where: {
-            roomId_userId: {
-                roomId,
-                userId
-            }
-        }
+      where: {
+        roomId_userId: {
+          roomId,
+          userId,
+        },
+      },
     });
 
     return this.findOne(roomId);

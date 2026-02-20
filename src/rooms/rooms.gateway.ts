@@ -34,7 +34,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomId = client.data.roomId;
 
     if (userId && roomId) {
-      const member = await this.roomMembersService.updateStatus(roomId, userId, RoomMemberStatus.OFFLINE);
+      const member = await this.roomMembersService.updateStatus(
+        roomId,
+        userId,
+        RoomMemberStatus.OFFLINE,
+      );
       const memberEntity = this.transformToEntity(member);
       this.server.to(roomId).emit('member:status_changed', memberEntity);
     }
@@ -50,7 +54,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.userId = userId;
     client.data.roomId = roomId;
 
-    const member = await this.roomMembersService.updateStatus(roomId, userId, RoomMemberStatus.ONLINE);
+    const member = await this.roomMembersService.updateStatus(
+      roomId,
+      userId,
+      RoomMemberStatus.ONLINE,
+    );
     const memberEntity = this.transformToEntity(member);
     this.server.to(roomId).emit('member:status_changed', memberEntity);
   }
@@ -65,7 +73,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.userId = null;
     client.data.roomId = null;
 
-    const member = await this.roomMembersService.updateStatus(roomId, userId, RoomMemberStatus.OFFLINE);
+    const member = await this.roomMembersService.updateStatus(
+      roomId,
+      userId,
+      RoomMemberStatus.OFFLINE,
+    );
     const memberEntity = this.transformToEntity(member);
     this.server.to(roomId).emit('member:status_changed', memberEntity);
   }
@@ -73,23 +85,28 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('member:update_status')
   async handleUpdateStatus(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string; userId: string; status: RoomMemberStatus },
+    @MessageBody()
+    payload: { roomId: string; userId: string; status: RoomMemberStatus },
   ) {
     const { roomId, userId, status } = payload;
-    const member = await this.roomMembersService.updateStatus(roomId, userId, status);
+    const member = await this.roomMembersService.updateStatus(
+      roomId,
+      userId,
+      status,
+    );
     const memberEntity = this.transformToEntity(member);
     this.server.to(roomId).emit('member:status_changed', memberEntity);
   }
 
   private transformToEntity(member: any) {
-      // Manual transformation similar to what RoomEntity does via class-transformer
-      // but applied to a single member object
-      if (member.user) {
-          return {
-              ...member,
-              user: new UserEntity(member.user)
-          };
-      }
-      return member;
+    // Manual transformation similar to what RoomEntity does via class-transformer
+    // but applied to a single member object
+    if (member.user) {
+      return {
+        ...member,
+        user: new UserEntity(member.user),
+      };
+    }
+    return member;
   }
 }

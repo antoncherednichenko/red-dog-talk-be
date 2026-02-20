@@ -1,4 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, UseInterceptors, ClassSerializerInterceptor, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
@@ -23,7 +38,12 @@ export class RoomsController {
 
   @Get()
   async findAll(@Request() req) {
-    return this.roomsService.findAll(req.user.id);
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException();
+    }
+    const rooms = await this.roomsService.findAll(userId);
+    return rooms.map((room) => new RoomEntity(room));
   }
 
   @Get(':id')
@@ -35,14 +55,21 @@ export class RoomsController {
   @Get(':id/members')
   async getMembers(@Param('id') id: string) {
     const members = await this.roomsService.getMembers(id);
-    return members.map(m => new RoomMemberEntity({
-        ...m,
-        user: new UserEntity(m.user)
-    }));
+    return members.map(
+      (m) =>
+        new RoomMemberEntity({
+          ...m,
+          user: new UserEntity(m.user),
+        }),
+    );
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto, @Request() req) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateRoomDto: UpdateRoomDto,
+    @Request() req,
+  ) {
     const room = await this.roomsService.update(id, updateRoomDto, req.user.id);
     return new RoomEntity(room);
   }

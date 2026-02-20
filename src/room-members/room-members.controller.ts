@@ -1,4 +1,11 @@
-import { Controller, Patch, Param, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { RoomMembersService } from './room-members.service';
 import { UpdateRoomMemberStatusDto } from './dto/update-room-member.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,6 +21,10 @@ export class RoomMembersController {
     @Body() updateStatusDto: UpdateRoomMemberStatusDto,
     @Request() req,
   ) {
-    return this.roomMembersService.updateStatus(roomId, req.user.id, updateStatusDto.status);
+    return this.roomMembersService.updateStatus(
+      roomId,
+      req.user.id,
+      updateStatusDto.status,
+    );
   }
 }
