@@ -2,16 +2,22 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RoomMemberStatus } from '@prisma/client';
+import { LivekitService } from './livekit.service';
+
+type AuthUser = { id: string; email: string; name: string };
 
 @Injectable()
 export class RoomsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly livekitService: LivekitService,
+  ) {}
 
   async create(createRoomDto: CreateRoomDto, userId: string) {
     // Create room and add creator as member
@@ -157,5 +163,33 @@ export class RoomsService {
     });
 
     return this.findOne(roomId);
+  }
+
+  async createCallAccessToken(roomId: string, user: AuthUser) {
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      include: {
+        members: {
+          where: { userId: user.id },
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!room) {
+      throw new NotFoundException(`Room with id ${roomId} not found`);
+    }
+
+    if (room.members.length === 0) {
+      throw new ForbiddenException(
+        'Only room members can request a call token',
+      );
+    }
+
+    return this.livekitService.createAccessToken({
+      roomName: room.id,
+      identity: user.id,
+      name: user.name,
+    });
   }
 }

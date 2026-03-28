@@ -17,13 +17,14 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
     constructor() {
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
-                (request) => request?.cookies?.access_token,
+                (request) => request.cookies
+                    ?.access_token ?? null,
             ]),
             ignoreExpiration: false,
             secretOrKey: process.env.JWT_SECRET || 'super-secret-key',
         });
     }
-    async validate(payload) {
+    validate(payload) {
         return { id: payload.sub, email: payload.email, name: payload.name };
     }
 };

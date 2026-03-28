@@ -1,6 +1,5 @@
 FROM node:20-bullseye
 
-# Install build dependencies for native modules (mediasoup)
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
@@ -24,6 +23,5 @@ RUN npx prisma generate
 RUN npm run build
 
 EXPOSE 4242
-EXPOSE 40000-49999/udp
 
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]

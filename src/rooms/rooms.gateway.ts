@@ -8,10 +8,22 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { RoomMembersService } from '../room-members/room-members.service';
-import { RoomMemberStatus } from '@prisma/client';
+import { Prisma, RoomMemberStatus } from '@prisma/client';
 
 import { UserEntity } from '../users/entities/user.entity';
+
+type RoomsSocketData = { userId: string | null; roomId: string | null };
+type RoomsSocket = Socket<
+  DefaultEventsMap,
+  DefaultEventsMap,
+  DefaultEventsMap,
+  RoomsSocketData
+>;
+type RoomMemberWithUser = Prisma.RoomMemberGetPayload<{
+  include: { user: true };
+}>;
 
 @WebSocketGateway({
   cors: {
@@ -24,14 +36,13 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly roomMembersService: RoomMembersService) {}
 
-  handleConnection(client: Socket) {
+  handleConnection(client: RoomsSocket) {
     console.log(`Client connected: ${client.id}`);
   }
 
-  async handleDisconnect(client: Socket) {
+  async handleDisconnect(client: RoomsSocket) {
     console.log(`Client disconnected: ${client.id}`);
-    const userId = client.data.userId;
-    const roomId = client.data.roomId;
+    const { userId, roomId } = client.data;
 
     if (userId && roomId) {
       const member = await this.roomMembersService.updateStatus(
@@ -46,11 +57,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('room:join')
   async handleJoinRoom(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: RoomsSocket,
     @MessageBody() payload: { roomId: string; userId: string },
   ) {
     const { roomId, userId } = payload;
-    client.join(roomId);
+    await client.join(roomId);
     client.data.userId = userId;
     client.data.roomId = roomId;
 
@@ -65,11 +76,11 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('room:leave')
   async handleLeaveRoom(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: RoomsSocket,
     @MessageBody() payload: { roomId: string; userId: string },
   ) {
     const { roomId, userId } = payload;
-    client.leave(roomId);
+    await client.leave(roomId);
     client.data.userId = null;
     client.data.roomId = null;
 
@@ -84,7 +95,7 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('member:update_status')
   async handleUpdateStatus(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: RoomsSocket,
     @MessageBody()
     payload: { roomId: string; userId: string; status: RoomMemberStatus },
   ) {
@@ -98,15 +109,10 @@ export class RoomsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(roomId).emit('member:status_changed', memberEntity);
   }
 
-  private transformToEntity(member: any) {
-    // Manual transformation similar to what RoomEntity does via class-transformer
-    // but applied to a single member object
-    if (member.user) {
-      return {
-        ...member,
-        user: new UserEntity(member.user),
-      };
-    }
-    return member;
+  private transformToEntity(member: RoomMemberWithUser) {
+    return {
+      ...member,
+      user: new UserEntity(member.user),
+    };
   }
 }

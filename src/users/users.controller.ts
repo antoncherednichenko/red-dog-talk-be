@@ -19,6 +19,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { Request as ExpressRequest } from 'express';
+
+type AuthUser = { id: string; email: string; name: string };
+type AuthenticatedRequest = ExpressRequest & { user: AuthUser };
 
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -27,7 +31,7 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
-  async findMe(@Request() req) {
+  async findMe(@Request() req: AuthenticatedRequest) {
     const userId = req.user.id;
     const user = await this.usersService.findOne(userId);
     if (!user) {

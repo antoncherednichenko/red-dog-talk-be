@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { CookieLoggerMiddleware } from './middleware/cookie-logger.middleware';
 import { RoomMembersModule } from './room-members/room-members.module';
-import { MediasoupModule } from './mediasoup/mediasoup.module';
+import { RoomMessagesModule } from './room-messages/room-messages.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { MediasoupModule } from './mediasoup/mediasoup.module';
     AuthModule,
     RoomsModule,
     RoomMembersModule,
-    MediasoupModule,
+    RoomMessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

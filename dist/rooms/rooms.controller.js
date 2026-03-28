@@ -19,7 +19,6 @@ const create_room_dto_1 = require("./dto/create-room.dto");
 const update_room_dto_1 = require("./dto/update-room.dto");
 const passport_1 = require("@nestjs/passport");
 const room_entity_1 = require("./entities/room.entity");
-const room_entity_2 = require("./entities/room.entity");
 const user_entity_1 = require("../users/entities/user.entity");
 let RoomsController = class RoomsController {
     constructor(roomsService) {
@@ -43,7 +42,7 @@ let RoomsController = class RoomsController {
     }
     async getMembers(id) {
         const members = await this.roomsService.getMembers(id);
-        return members.map((m) => new room_entity_2.RoomMemberEntity({
+        return members.map((m) => new room_entity_1.RoomMemberEntity({
             ...m,
             user: new user_entity_1.UserEntity(m.user),
         }));
@@ -62,6 +61,9 @@ let RoomsController = class RoomsController {
     async leave(id, req) {
         const room = await this.roomsService.leave(id, req.user.id);
         return new room_entity_1.RoomEntity(room);
+    }
+    async createCallToken(id, req) {
+        return this.roomsService.createCallAccessToken(id, req.user);
     }
 };
 exports.RoomsController = RoomsController;
@@ -130,6 +132,15 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], RoomsController.prototype, "leave", null);
+__decorate([
+    (0, common_1.Post)(':id/call/token'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], RoomsController.prototype, "createCallToken", null);
 exports.RoomsController = RoomsController = __decorate([
     (0, common_1.Controller)('rooms'),
     (0, common_1.UseGuards)((0, passport_1.AuthGuard)('jwt')),

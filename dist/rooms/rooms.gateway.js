@@ -27,8 +27,7 @@ let RoomsGateway = class RoomsGateway {
     }
     async handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
-        const userId = client.data.userId;
-        const roomId = client.data.roomId;
+        const { userId, roomId } = client.data;
         if (userId && roomId) {
             const member = await this.roomMembersService.updateStatus(roomId, userId, client_1.RoomMemberStatus.OFFLINE);
             const memberEntity = this.transformToEntity(member);
@@ -37,7 +36,7 @@ let RoomsGateway = class RoomsGateway {
     }
     async handleJoinRoom(client, payload) {
         const { roomId, userId } = payload;
-        client.join(roomId);
+        await client.join(roomId);
         client.data.userId = userId;
         client.data.roomId = roomId;
         const member = await this.roomMembersService.updateStatus(roomId, userId, client_1.RoomMemberStatus.ONLINE);
@@ -46,7 +45,7 @@ let RoomsGateway = class RoomsGateway {
     }
     async handleLeaveRoom(client, payload) {
         const { roomId, userId } = payload;
-        client.leave(roomId);
+        await client.leave(roomId);
         client.data.userId = null;
         client.data.roomId = null;
         const member = await this.roomMembersService.updateStatus(roomId, userId, client_1.RoomMemberStatus.OFFLINE);
@@ -60,13 +59,10 @@ let RoomsGateway = class RoomsGateway {
         this.server.to(roomId).emit('member:status_changed', memberEntity);
     }
     transformToEntity(member) {
-        if (member.user) {
-            return {
-                ...member,
-                user: new user_entity_1.UserEntity(member.user),
-            };
-        }
-        return member;
+        return {
+            ...member,
+            user: new user_entity_1.UserEntity(member.user),
+        };
     }
 };
 exports.RoomsGateway = RoomsGateway;
@@ -79,7 +75,7 @@ __decorate([
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], RoomsGateway.prototype, "handleJoinRoom", null);
 __decorate([
@@ -87,7 +83,7 @@ __decorate([
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], RoomsGateway.prototype, "handleLeaveRoom", null);
 __decorate([
@@ -95,7 +91,7 @@ __decorate([
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __param(1, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], RoomsGateway.prototype, "handleUpdateStatus", null);
 exports.RoomsGateway = RoomsGateway = __decorate([

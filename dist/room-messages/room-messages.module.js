@@ -6,17 +6,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MediasoupModule = void 0;
+exports.RoomMessagesModule = void 0;
 const common_1 = require("@nestjs/common");
-const mediasoup_service_1 = require("./mediasoup.service");
-const mediasoup_gateway_1 = require("./mediasoup.gateway");
-let MediasoupModule = class MediasoupModule {
+const prisma_module_1 = require("../prisma/prisma.module");
+const room_messages_controller_1 = require("./room-messages.controller");
+const room_messages_service_1 = require("./room-messages.service");
+let RoomMessagesModule = class RoomMessagesModule {
 };
-exports.MediasoupModule = MediasoupModule;
-exports.MediasoupModule = MediasoupModule = __decorate([
+exports.RoomMessagesModule = RoomMessagesModule;
+exports.RoomMessagesModule = RoomMessagesModule = __decorate([
     (0, common_1.Module)({
-        providers: [mediasoup_service_1.MediasoupService, mediasoup_gateway_1.MediasoupGateway],
-        exports: [mediasoup_service_1.MediasoupService],
+        imports: [prisma_module_1.PrismaModule],
+        controllers: [room_messages_controller_1.RoomMessagesController],
+        providers: [room_messages_service_1.RoomMessagesService],
     })
-], MediasoupModule);
-//# sourceMappingURL=mediasoup.module.js.map
+], RoomMessagesModule);
+//# sourceMappingURL=room-messages.module.js.map

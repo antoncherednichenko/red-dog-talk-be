@@ -1,6 +1,5 @@
 import { Room, RoomType, RoomMemberStatus } from '@prisma/client';
 import { UserEntity } from '../../users/entities/user.entity';
-import { Transform } from 'class-transformer';
 
 export class RoomMemberEntity {
   id: string;

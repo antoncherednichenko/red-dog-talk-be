@@ -13,9 +13,11 @@ exports.RoomsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const livekit_service_1 = require("./livekit.service");
 let RoomsService = class RoomsService {
-    constructor(prisma) {
+    constructor(prisma, livekitService) {
         this.prisma = prisma;
+        this.livekitService = livekitService;
     }
     async create(createRoomDto, userId) {
         return this.prisma.room.create({
@@ -140,10 +142,33 @@ let RoomsService = class RoomsService {
         });
         return this.findOne(roomId);
     }
+    async createCallAccessToken(roomId, user) {
+        const room = await this.prisma.room.findUnique({
+            where: { id: roomId },
+            include: {
+                members: {
+                    where: { userId: user.id },
+                    select: { id: true },
+                },
+            },
+        });
+        if (!room) {
+            throw new common_1.NotFoundException(`Room with id ${roomId} not found`);
+        }
+        if (room.members.length === 0) {
+            throw new common_1.ForbiddenException('Only room members can request a call token');
+        }
+        return this.livekitService.createAccessToken({
+            roomName: room.id,
+            identity: user.id,
+            name: user.name,
+        });
+    }
 };
 exports.RoomsService = RoomsService;
 exports.RoomsService = RoomsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        livekit_service_1.LivekitService])
 ], RoomsService);
 //# sourceMappingURL=rooms.service.js.map

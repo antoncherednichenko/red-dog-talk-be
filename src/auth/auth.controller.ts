@@ -16,7 +16,10 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
-import { Response } from 'express';
+import { Response, Request as ExpressRequest } from 'express';
+
+type AuthUser = { id: string; email: string; name: string };
+type AuthenticatedRequest = ExpressRequest & { user: AuthUser };
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -69,7 +72,7 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Request() req) {
+  getProfile(@Request() req: AuthenticatedRequest) {
     return req.user;
   }
 }

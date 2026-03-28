@@ -1,9 +1,16 @@
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { LivekitService } from './livekit.service';
+type AuthUser = {
+    id: string;
+    email: string;
+    name: string;
+};
 export declare class RoomsService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly livekitService;
+    constructor(prisma: PrismaService, livekitService: LivekitService);
     create(createRoomDto: CreateRoomDto, userId: string): Promise<{
         name: string;
         id: string;
@@ -75,4 +82,11 @@ export declare class RoomsService {
         updatedAt: Date;
         ownerId: string;
     }>;
+    createCallAccessToken(roomId: string, user: AuthUser): Promise<{
+        token: string;
+        url: string;
+        roomName: string;
+        identity: string;
+    }>;
 }
+export {};

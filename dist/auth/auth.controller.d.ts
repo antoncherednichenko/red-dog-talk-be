@@ -2,7 +2,15 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserEntity } from '../users/entities/user.entity';
-import { Response } from 'express';
+import { Response, Request as ExpressRequest } from 'express';
+type AuthUser = {
+    id: string;
+    email: string;
+    name: string;
+};
+type AuthenticatedRequest = ExpressRequest & {
+    user: AuthUser;
+};
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
@@ -13,5 +21,6 @@ export declare class AuthController {
     logout(res: Response): {
         message: string;
     };
-    getProfile(req: any): any;
+    getProfile(req: AuthenticatedRequest): Express.User & AuthUser;
 }
+export {};

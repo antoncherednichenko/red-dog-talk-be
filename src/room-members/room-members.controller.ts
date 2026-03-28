@@ -9,6 +9,10 @@ import {
 import { RoomMembersService } from './room-members.service';
 import { UpdateRoomMemberStatusDto } from './dto/update-room-member.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Request as ExpressRequest } from 'express';
+
+type AuthUser = { id: string; email: string; name: string };
+type AuthenticatedRequest = ExpressRequest & { user: AuthUser };
 
 @Controller('room-members')
 @UseGuards(AuthGuard('jwt'))
@@ -19,7 +23,7 @@ export class RoomMembersController {
   updateStatus(
     @Param('roomId') roomId: string,
     @Body() updateStatusDto: UpdateRoomMemberStatusDto,
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
   ) {
     return this.roomMembersService.updateStatus(
       roomId,

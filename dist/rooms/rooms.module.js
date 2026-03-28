@@ -13,6 +13,7 @@ const rooms_controller_1 = require("./rooms.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 const rooms_gateway_1 = require("./rooms.gateway");
 const room_members_module_1 = require("../room-members/room-members.module");
+const livekit_service_1 = require("./livekit.service");
 let RoomsModule = class RoomsModule {
 };
 exports.RoomsModule = RoomsModule;
@@ -20,7 +21,7 @@ exports.RoomsModule = RoomsModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule, room_members_module_1.RoomMembersModule],
         controllers: [rooms_controller_1.RoomsController],
-        providers: [rooms_service_1.RoomsService, rooms_gateway_1.RoomsGateway],
+        providers: [rooms_service_1.RoomsService, rooms_gateway_1.RoomsGateway, livekit_service_1.LivekitService],
     })
 ], RoomsModule);
 //# sourceMappingURL=rooms.module.js.map
