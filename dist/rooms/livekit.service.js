@@ -13,7 +13,7 @@ let LivekitService = class LivekitService {
     async createAccessToken(params) {
         const apiKey = process.env.LIVEKIT_API_KEY;
         const apiSecret = process.env.LIVEKIT_API_SECRET;
-        const livekitUrl = process.env.LIVEKIT_URL;
+        const livekitUrl = process.env.LIVEKIT_PUBLIC_URL;
         if (!apiKey || !apiSecret || !livekitUrl) {
             throw new common_1.InternalServerErrorException('LiveKit is not configured. Set LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET.');
         }
